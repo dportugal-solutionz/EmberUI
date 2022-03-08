@@ -30,7 +30,7 @@ export class AppComponent implements OnInit{
     get ControlSystemOnline() : boolean {return this.IsOnline;}
     set ControlSystemOnline(value : any)
     {
-        this.IsOnline = (value === 'true');
+        this.IsOnline = (value === true);
         this.GetIpTable();
         this.Rerender();
     }
@@ -38,7 +38,7 @@ export class AppComponent implements OnInit{
     get ControlSystemOffline(): boolean { return this.IsOffline; }
     set ControlSystemOffline(value : any)
     {
-        this.IsOffline = (value === 'true');
+        this.IsOffline = (value === true);
         this.Rerender();
     }
     IpTableEntry        : any[] = [];
@@ -127,13 +127,25 @@ export class AppComponent implements OnInit{
 
         CrComLib.subscribeState(ConfigJoin.Type,ConfigJoin.Number,
             (value: any) => {
-                var str = `${value.substring(0,20)}...${value.substring(value.length-20,20)}`
-                var json = JSON.parse(str);
-                this.log.verbose("Subscription received {joinType} {joinNumber} {str}",ConfigJoin.Type,ConfigJoin.Number,str);
-                this.log.verbose("Json Config {json}",json);
-                this.ConfigString = str;
+                //var str = `${value.substring(0,20)}...${value.substring(value.length-20,20)}`
+                //this.log.verbose("Subscription received {joinType} {joinNumber} {str}",ConfigJoin.Type,ConfigJoin.Number,str);
+                this.ConfigString += value;
+
                 if (value)
-                    this.Rerender();});
+                    this.Rerender();
+
+                try
+                {
+                    this.log.verbose("Parsing {str}",this.ConfigString);
+                    var json = JSON.parse(this.ConfigString);
+                    this.log.verbose("Json Config {json}",json);
+                }
+                catch(e)
+                {
+                    this.log.error("Error {e}",e);
+                }
+            });
+
     }
 
 
