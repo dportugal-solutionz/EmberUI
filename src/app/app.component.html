@@ -1,0 +1,57 @@
+
+<div>
+  <p>App Component</p>
+  <table style="width:100%;">
+    <colgroup>
+      <col span="1" style="width:10%;">
+      <col span="1" style="width:20%;">
+      <col span="1" style="width:70%;">
+    </colgroup>
+    <tr>
+      <td></td>
+      <td>MyIpAddress</td>
+      <td>{{MyIpAddress}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>MyMacAddress</td>
+      <td>{{MyMacAddress}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>MyRoomName</td>
+      <td>{{MyRoomName}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>ControlSystemOnline</td>
+      <td>{{ControlSystemOnline}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>ControlSystemOffline</td>
+      <td>{{ControlSystemOffline}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>Config</td>
+      <td>{{ConfigString}}</td>
+    </tr>
+    <tr *ngFor="let entry of IpTableEntry;index as ndx">
+      <td>{{ndx}}</td>
+      <td>IpTableEntry[{{ndx}}]</td>
+      <td>{{entry}}</td>
+    </tr>
+    <tr>
+      <td>Log Count</td>
+      <td>{{GetEntries().length}}</td>
+    </tr>
+    <tr *ngFor="let logentry of GetEntries(); index as ndx">
+      <td>{{ndx}}</td>
+      <td>{{SetRedrawTime(logentry)}}</td>
+      <td>{{RenderLogEvent(logentry)}}</td>
+    </tr>
+
+  </table>
+  <app-menu></app-menu>
+</div>
