@@ -1,4 +1,18 @@
+tr {
+    overflow-x: clip;
+}
+
 td {
-    overflow-y:clip;
+    overflow-x: clip;
     border-bottom: 1px solid #CCC;
+}
+.logtext {
+    font-family: monospace;
+}
+
+.errtext {
+    color:rgb(255, 0, 221);
+}
+.warntext {
+    color:rgb(255, 230, 0);
 }

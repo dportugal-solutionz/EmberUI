@@ -1,44 +1,74 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule, Provider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { Logger, LogStorageSink } from 'src/classes/Logger/logger.service';
 import { AppComponent } from './app.component';
-import {  HttpClientModule} from '@angular/common/http';
+import { HttpClientModule} from '@angular/common/http';
 import WebXPanel, {WebXPanelConfigParams, isActive} from "@crestron/ch5-webxpanel";
-import {getVersion, getBuildDate} from "@crestron/ch5-webxpanel"; 
-import { CrestronJoin } from 'src/classes/CrestronJoin/CrestronJoin';
-import { CrestronJoinComponent } from './crestron-join/crestron-join.component';
+import { getVersion, getBuildDate} from "@crestron/ch5-webxpanel"; 
+import { ControlSystemOnlineService } from './Services/ControlSystemOnlineService/control-system-online.service';
+import { ConfigurationService } from './Services/ConfigurationService/configuration.service';
+import { Logger, LoggerConfiguration, ConsoleSink, SeqSink } from 'serilogger';
+import { SeriloggerCrestronSink } from './Commons/SeriloggerCrestronSink';
+import { LogStorageSink } from './Commons/LogStorageSink';
+import { LogStorageService } from './Services/LogStorageService/log-storage.service';
+import { SeriloggerConsoleSink } from './Commons/SeriloggerConsoleSink';
 
-//let useWebPanel:boolean = true;
-let WebPanelProvider = null;
-//if (useWebPanel) {
-  console.log(`WebXPanel version: ${getVersion()}`); 
-  console.log(`WebXPanel build date: ${getBuildDate()}`); 
+import { MenulistComponent } from './Components/menulist/menulist.component';
+import { MenuitemComponent } from './Components/menuitem/menuitem.component';
 
-  const configuration = {
-    host: '172.16.48.12', // defaults to window.location.host
-    ipId: '0x04' // string representing a hex value. Might contain "0x" or not. Defaults to "0x03"
-    //port: '41794' //no longer required, use this if you have a different websocket port set on the processor
-  };
+/*************************************************************************************************
+What is this code running on
+**************************************************************************************************/
+//On a TSW1060 navigator.userAgent returns 'Mozilla/5.0 (Linux; Android 5.1.1; Crestron Touchpanel Build/LMY47V; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/87.0.4280.141 Safari/537.36'
+let IamATouchPanel : boolean = navigator.userAgent.indexOf("Crestron Touchpanel") >= 0;
 
-  //check if running as a web panel before initializing the connection
-  const webXPanelFactory = () => () => {
-    if (isActive) {
-      WebXPanel.initialize(configuration);
-    }
+/*************************************************************************************************
+Logger
+**************************************************************************************************/
+//we temporarily create here since CSO needs one.
+let logger = new LoggerConfiguration()
+  .writeTo(new ConsoleSink())
+  .create();
+const CSO = new ControlSystemOnlineService(logger);
+const logStorage = new LogStorageService(CSO);
+//reconfigure the logger with additional sinks.
+logger = new LoggerConfiguration()
+      .writeTo(new SeriloggerConsoleSink())
+      .writeTo(new SeriloggerCrestronSink())
+      .writeTo(new LogStorageSink(logStorage))
+      //.writeTo(new SeqSink({
+      //  url:"http://pc1693.spinitar.com:5341",
+      //  apiKey:"frUTgBIgb4yxh8HdpUiM"
+      //}))
+      .create();
+
+/*************************************************************************************************
+Add WebXPanel
+**************************************************************************************************/
+console.log(`WebXPanel version: ${getVersion()}`); 
+console.log(`WebXPanel build date: ${getBuildDate()}`); 
+
+const configuration = {
+  host: '172.16.48.12', // defaults to window.location.host
+  ipId: '0x08'        // string representing a hex value. Might contain "0x" or not. Defaults to "0x03"
+  //port: '41794'     //no longer required, use this if you have a different websocket port set on the processor
+};
+
+//check if running as a web panel before initializing the connection
+const webXPanelFactory = () => () => {
+  if (isActive) {
+    WebXPanel.initialize(configuration);
   }
+}
 
-  WebPanelProvider = {
-    provide: APP_INITIALIZER,
-    useFactory: webXPanelFactory,
-    multi: true
-  }
-//}
-
+/*************************************************************************************************
+ANGULAR
+**************************************************************************************************/
 @NgModule({
   declarations: [
     AppComponent,
-    CrestronJoinComponent
+    MenulistComponent,
+    MenuitemComponent
   ],
   imports: [
     BrowserModule,
@@ -46,18 +76,27 @@ let WebPanelProvider = null;
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: './'},
-    {provide: LogStorageSink, useClass: LogStorageSink},
-    {provide: Logger, useClass: Logger},
-    WebPanelProvider
+    {provide: ControlSystemOnlineService, useValue: CSO},
+    {provide: Logger, useValue: logger},
+    {provide: ConfigurationService, useClass: ConfigurationService},
+    {provide: LogStorageService, useValue: logStorage},
+    {
+      provide: APP_INITIALIZER,
+      useFactory: webXPanelFactory,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent],
   schemas:[CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppModule {
-  private log : Logger;
-  constructor(log: Logger)
+
+  constructor(
+    private log : Logger,
+    private cso: ControlSystemOnlineService,
+    private cfg : ConfigurationService,
+  )
   {
-    this.log = log.ForContext("AppModule");
-    this.log.verbose("Constructor");
+
   }
 }

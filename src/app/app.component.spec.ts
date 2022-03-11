@@ -1,11 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { MenuitemComponent } from './Components/menuitem/menuitem.component';
+import { MenulistComponent } from './Components/menulist/menulist.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
-        AppComponent
+        AppComponent,
+        MenuitemComponent,
+        MenulistComponent
       ],
     }).compileComponents();
   });

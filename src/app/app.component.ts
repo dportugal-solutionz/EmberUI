@@ -1,18 +1,20 @@
 import { Component, OnInit, ChangeDetectorRef} from '@angular/core';
-import { Logger } from 'src/classes/Logger/logger.service';
-import { LogEvent } from 'src/classes/Logger/LogEvent';
+import { Logger, LogEvent, LogEventLevel } from 'serilogger';
+import { Menu } from './Config/Config';
 import {
-        ConfigJoin
-        ,TpIpAddressJoin
+        TpIpAddressJoin
         ,TpMacAddressJoin
         ,TpRoomNameJoin
-        ,TpOnlineJoin
-        ,TpOfflineJoin
         ,TpIpTableEntry1
         ,TpIpTableEntry2
         ,TpIpTableEntry3
         ,TpIpTableEntry4
-    } from '../classes/StaticJoinNumbers';
+    } from './Config/StaticJoinNumbers';
+
+import { ControlSystemOnlineService } from './Services/ControlSystemOnlineService/control-system-online.service';
+import { ConfigurationService } from './Services/ConfigurationService/configuration.service';
+import { LogStorageService } from './Services/LogStorageService/log-storage.service';
+import { RenderLogEvent } from './Commons/RenderLogEvent';
 declare var CrComLib: typeof import('@crestron/ch5-crcomlib');
 
 @Component({
@@ -26,184 +28,218 @@ export class AppComponent implements OnInit{
     MyIpAddress         : any;
     MyMacAddress        : any;
     MyRoomName          : any;
-    private IsOnline: boolean = false;
-    get ControlSystemOnline() : boolean {return this.IsOnline;}
-    set ControlSystemOnline(value : any)
-    {
-        this.IsOnline = (value === true);
-        this.GetIpTable();
-        this.Rerender();
-    }
-    private IsOffline : boolean = true;
-    get ControlSystemOffline(): boolean { return this.IsOffline; }
-    set ControlSystemOffline(value : any)
-    {
-        this.IsOffline = (value === true);
-        this.Rerender();
-    }
+    LogEntries          : any[] = [];
+    MenuItems           : Menu[] | null = null;
+    NavigatorInformation : any = {
+        userAgent:`${navigator.userAgent}`,
+        maxTouchPoints:`${navigator.maxTouchPoints}`,
+        online:`${navigator.onLine}`,
+        vendor: `${navigator.vendor}`,
+        outer: `${window.outerWidth} x ${window.outerHeight} `,
+        inner : `${window.innerWidth} x ${window.innerHeight}`,
+        screen : `${window.screen.width} x ${window.screen.height}`
+    };
+
+
+    private SystemIsOnline : boolean = false;
+    get ControlSystemOnline() : boolean { return this.SystemIsOnline; }
+    get ControlSystemOffline(): boolean { return !this.SystemIsOnline; }
+
     IpTableEntry        : any[] = [];
     ConfigString        : any;
+    ConfigParsingSuccessful: boolean = false;
 
     private changeDetectorRef : ChangeDetectorRef
 
     private log: Logger;
-    constructor(log: Logger, cdetect: ChangeDetectorRef)
+    private logList : LogStorageService
+    private csoService : ControlSystemOnlineService;
+    private configService : ConfigurationService;
+    constructor(
+        log: Logger,
+        logList : LogStorageService,
+        cdetect: ChangeDetectorRef,
+        cso: ControlSystemOnlineService,
+        configService: ConfigurationService)
     {
-        this.changeDetectorRef = cdetect;
-        this.log = log.ForContext("AppComponent");
+        this.log = log.createChild({Context:'AppComponent'});
         this.log.info("Constructor");
+
+        this.csoService = cso;
+        this.csoService.IsOnline.subscribe({next: (state) => {
+                this.log.verbose("System Online State Received {state}",state);
+                this.SystemIsOnline = state;
+        }});
+        this.logList = logList;
+        this.logList.Entries.subscribe({
+            next : (entries) => {
+                this.LogEntries = entries;
+            }
+        })
+        this.configService = configService;
+        this.changeDetectorRef = cdetect;
         this.IpTableEntry = [];
 
+        this.configService.Config.subscribe({
+            next: (bytesreceived) => {
+                //if (bytesreceived)
+                //    this.log.verbose("Config Received {bytesreceived}",bytesreceived);
+            },
+            error: (error) => {
+                this.log.verbose("Config Error {err}",error);
+                this.ConfigString = `Error ${error}`;
+            },
+            complete: () => {
+                this.ConfigParsingSuccessful = true;
+                this.log.verbose("Config Completed.");
+                this.ConfigString = "Parsing Successful"; //JSON.stringify(this.configService.ConfigAsAnObject);
+                if (this.configService.ConfigAsAnObject)
+                    this.MenuItems = this.configService.ConfigAsAnObject.Touchpanels[0].Menus;
+                if (this.MenuItems)
+                    this.log.verbose("Menus Count: {length}",this.MenuItems.length);
+                this.Rerender();
+            }
+        })
 
+    }
+
+
+    /**
+     * Initializes crestron join subscriptions used by this component
+     */
+    private InitCrestronSubscriptions()
+    {
         CrComLib.subscribeState(TpIpAddressJoin.Type,TpIpAddressJoin.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpAddressJoin.Type,TpIpAddressJoin.Number,  value);
-                this.MyIpAddress = value;
+            (value: any) =>
+            {
                 if (value)
+                {
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpAddressJoin.Type,TpIpAddressJoin.Number,  value);
+                    this.MyIpAddress = value;
                     this.Rerender();
-            });
+                }
+
+            }
+        );
 
         CrComLib.subscribeState(TpMacAddressJoin.Type,TpMacAddressJoin.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpMacAddressJoin.Type,TpMacAddressJoin.Number,value);
-                this.MyMacAddress = value;
+            (value: any) =>
+            {
                 if (value)
+                {
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpMacAddressJoin.Type,TpMacAddressJoin.Number,value);
+                    this.MyMacAddress = value;
                     this.Rerender();
-            });
+                }
+            }
+        );
 
         CrComLib.subscribeState(TpRoomNameJoin.Type,TpRoomNameJoin.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpRoomNameJoin.Type,TpRoomNameJoin.Number,    value);
-                this.MyRoomName = value;
+            (value: any) =>
+            {
                 if (value)
+                {
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpRoomNameJoin.Type,TpRoomNameJoin.Number,    value);
+                    this.MyRoomName = value;
                     this.Rerender();
-            });
-
-        CrComLib.subscribeState(TpOnlineJoin.Type,TpOnlineJoin.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpOnlineJoin.Type,TpOnlineJoin.Number,        value);
-                this.ControlSystemOnline = value;
-                this.Rerender();
-            });
-
-        CrComLib.subscribeState(TpOfflineJoin.Type,TpOfflineJoin.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpOfflineJoin.Type,TpOfflineJoin.Number,      value);
-                this.ControlSystemOffline = value;
-                this.Rerender();
-            });
+                }
+            }
+        );
 
         CrComLib.subscribeState(TpIpTableEntry1.Type,TpIpTableEntry1.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry1.Type,TpIpTableEntry1.Number,  value);
-                this.IpTableEntry[0] = value;
+            (value: any) =>
+            {
                 if (value)
+                {
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry1.Type,TpIpTableEntry1.Number,  value);
+                    this.IpTableEntry[0] = value;
                     this.Rerender();
-            });
+                }
+            }
+        );
 
         CrComLib.subscribeState(TpIpTableEntry2.Type,TpIpTableEntry2.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry2.Type,TpIpTableEntry2.Number,  value);
-                this.IpTableEntry[1] = value;
+            (value: any) =>
+            {
                 if (value)
+                {
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry2.Type,TpIpTableEntry2.Number,  value);
+                    this.IpTableEntry[1] = value;
                     this.Rerender();
-            });
+                }
+            }
+        );
 
         CrComLib.subscribeState(TpIpTableEntry3.Type,TpIpTableEntry3.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry3.Type,TpIpTableEntry3.Number,  value);
-                this.IpTableEntry[2] = value;
+            (value: any) =>
+            {
                 if (value)
+                {
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry3.Type,TpIpTableEntry3.Number,  value);
+                    this.IpTableEntry[2] = value;
                     this.Rerender();
-            });
+                }
+            }
+        );
 
         CrComLib.subscribeState(TpIpTableEntry4.Type,TpIpTableEntry4.Number,
-            (value: any) => {
-                this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry4.Type,TpIpTableEntry4.Number,  value);
-                this.IpTableEntry[3] = value;
+            (value: any) =>
+            {
                 if (value)
-                    this.Rerender();
-            });
-
-        CrComLib.subscribeState(ConfigJoin.Type,ConfigJoin.Number,
-            (value: any) => {
-                //var str = `${value.substring(0,20)}...${value.substring(value.length-20,20)}`
-                //this.log.verbose("Subscription received {joinType} {joinNumber} {str}",ConfigJoin.Type,ConfigJoin.Number,str);
-                this.ConfigString += value;
-
-                if (value)
-                    this.Rerender();
-
-                try
                 {
-                    this.log.verbose("Parsing {str}",this.ConfigString);
-                    var json = JSON.parse(this.ConfigString);
-                    this.log.verbose("Json Config {json}",json);
+                    this.log.verbose("Subscription received {joinType} {joinNumber} {value}",TpIpTableEntry4.Type,TpIpTableEntry4.Number,  value);
+                    this.IpTableEntry[3] = value;
+                    this.Rerender();
                 }
-                catch(e)
-                {
-                    this.log.error("Error {e}",e);
-                }
-            });
-
+            }
+        );
     }
 
 
     ngOnInit(): void {
         this.log.info("ngOnInit");
-
-        this.MyIpAddress          = CrComLib.getState(TpIpAddressJoin.Type,TpIpAddressJoin.Number);
-        this.MyMacAddress         = CrComLib.getState(TpMacAddressJoin.Type,TpMacAddressJoin.Number);
-        this.MyRoomName           = CrComLib.getState(TpRoomNameJoin.Type,TpRoomNameJoin.Number);
-        this.ControlSystemOnline  = CrComLib.getState(TpOnlineJoin.Type,TpOnlineJoin.Number);
-        this.ControlSystemOffline = CrComLib.getState(TpOfflineJoin.Type,TpOfflineJoin.Number);
-        this.IpTableEntry[0]      = CrComLib.getState(TpIpTableEntry1.Type,TpIpTableEntry1.Number);
-        this.IpTableEntry[1]      = CrComLib.getState(TpIpTableEntry2.Type,TpIpTableEntry2.Number);
-        this.IpTableEntry[2]      = CrComLib.getState(TpIpTableEntry3.Type,TpIpTableEntry3.Number);
-        this.IpTableEntry[3]      = CrComLib.getState(TpIpTableEntry4.Type,TpIpTableEntry4.Number);
-        this.ConfigString         = CrComLib.getState(ConfigJoin.Type,ConfigJoin.Number);
-        this.Rerender();
+        this.InitCrestronSubscriptions();
     }
 
-    GetCurrentTime():string
-    {
-        var current = new Date();
-        return `${current.getHours().toString().padStart(2,'0')}:${current.getMinutes().toString().padStart(2,'0')}:${current.getSeconds().toString().padStart(2,'0')}.${current.getMilliseconds().toString().padStart(4,'0').substring(0,2)}`;
-    }
-
+    /**
+     * Gets entries from the logger
+     * @returns entries
+     */
     GetEntries() : any
     {
-        return this.log.Entries.GetCollection();
+        return this.logList;
     }
 
-    SetRedrawTime(event: LogEvent){
-        if (event.Drawn)
-            return event.Drawn;
-        else
-            event.Drawn = this.GetCurrentTime();
-
-        return event.Drawn;
-    }
-
-    RenderLogEvent(event: LogEvent) : string
-    {
-        return this.log.Render(event);
-    }
-
-    renderValue: number = 0;
+    private renderValue: number = 0;
+    /**
+     * Rerenders app component
+     */
     Rerender()
     {
-        this.renderValue++;
+        this.log.verbose('Rerender');
+        this.renderValue = 1;
         this.changeDetectorRef.detectChanges();
+        this.renderValue = 0;
     }
 
-
-    GetIpTable() : any
+    RenderLogItem(item : LogEvent) : string
     {
-        this.IpTableEntry[0]      = CrComLib.getState(TpIpTableEntry1.Type,TpIpTableEntry1.Number);
-        this.IpTableEntry[1]      = CrComLib.getState(TpIpTableEntry2.Type,TpIpTableEntry2.Number);
-        this.IpTableEntry[2]      = CrComLib.getState(TpIpTableEntry3.Type,TpIpTableEntry3.Number);
-        this.IpTableEntry[3]      = CrComLib.getState(TpIpTableEntry4.Type,TpIpTableEntry4.Number);
-        this.Rerender();
+        return RenderLogEvent(item);
+    }
+
+    GetLogEntryClass(item: LogEvent) : string[]
+    {
+        let ret : string[] = ['logtext'];
+        switch (item.level)
+        {
+            case LogEventLevel.warning :
+                ret.push('warntext');
+                break;
+            case LogEventLevel.error :
+            case LogEventLevel.fatal:
+                ret.push('errtext');
+                break;
+        }
+        return ret;
     }
 }

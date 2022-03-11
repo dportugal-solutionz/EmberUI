@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CrestronJoinComponent } from './crestron-join.component';
+import { MenuitemComponent } from './menuitem.component';
 
-describe('CrestronJoinComponent', () => {
-  let component: CrestronJoinComponent;
-  let fixture: ComponentFixture<CrestronJoinComponent>;
+describe('MenuitemComponent', () => {
+  let component: MenuitemComponent;
+  let fixture: ComponentFixture<MenuitemComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CrestronJoinComponent ]
+      declarations: [ MenuitemComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CrestronJoinComponent);
+    fixture = TestBed.createComponent(MenuitemComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

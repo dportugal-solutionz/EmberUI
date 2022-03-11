@@ -1,3 +1,6 @@
+/**
+ * A CrComLib friendly class for use in subscribe,get,and publishing states
+ */
 class ISimpleJoins{
     Type: any //TSignalNonStandardTypeName;
     Number: string;
@@ -8,8 +11,18 @@ class ISimpleJoins{
     }
 }
 
-export const ConfigJoin             : ISimpleJoins             = new ISimpleJoins('s','1');
-export const LogToControlSystemJoin : ISimpleJoins = new ISimpleJoins('s','2');
+/**
+ * The touch panel will receive the config on this join
+ */
+export const ConfigJoin            : ISimpleJoins = new ISimpleJoins('s','1');
+/**
+ * The touch panel will send to the control system on this join, LogEvents
+ */
+export const LoggerEmitJoin        : ISimpleJoins = new ISimpleJoins('s','2');
+/**
+ * The touch panel will send to the control system on this join, Commands from button pushes, sliders, or any other component
+ */
+export const CommandEmitJoin       : ISimpleJoins = new ISimpleJoins('s','3');
 
 export const TpIpAddressJoin       : ISimpleJoins = new ISimpleJoins('s','Csig.Ip_Address_fb');
 export const TpMacAddressJoin      : ISimpleJoins = new ISimpleJoins('s','Csig.MAC_Address_fb');

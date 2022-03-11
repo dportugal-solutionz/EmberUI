@@ -1,57 +1,51 @@
 
 <div>
   <p>App Component</p>
+  <app-menulist *ngIf="ConfigParsingSuccessful" [Items]="MenuItems"></app-menulist>
   <table style="width:100%;">
     <colgroup>
-      <col span="1" style="width:10%;">
       <col span="1" style="width:20%;">
       <col span="1" style="width:70%;">
     </colgroup>
     <tr>
-      <td></td>
+      <td>Navigator Information</td>
+      <td><code><pre>{{NavigatorInformation | json}}</pre></code></td>
+    </tr>
+    <tr>
       <td>MyIpAddress</td>
       <td>{{MyIpAddress}}</td>
     </tr>
     <tr>
-      <td></td>
       <td>MyMacAddress</td>
       <td>{{MyMacAddress}}</td>
     </tr>
     <tr>
-      <td></td>
       <td>MyRoomName</td>
       <td>{{MyRoomName}}</td>
     </tr>
     <tr>
-      <td></td>
       <td>ControlSystemOnline</td>
       <td>{{ControlSystemOnline}}</td>
     </tr>
     <tr>
-      <td></td>
       <td>ControlSystemOffline</td>
       <td>{{ControlSystemOffline}}</td>
     </tr>
     <tr>
-      <td></td>
       <td>Config</td>
       <td>{{ConfigString}}</td>
     </tr>
     <tr *ngFor="let entry of IpTableEntry;index as ndx">
-      <td>{{ndx}}</td>
       <td>IpTableEntry[{{ndx}}]</td>
       <td>{{entry}}</td>
     </tr>
     <tr>
       <td>Log Count</td>
-      <td>{{GetEntries().length}}</td>
+      <td>{{LogEntries.length}}</td>
     </tr>
-    <tr *ngFor="let logentry of GetEntries(); index as ndx">
+    <tr *ngFor="let logentry of LogEntries; index as ndx" [ngClass]="GetLogEntryClass(logentry)">
       <td>{{ndx}}</td>
-      <td>{{SetRedrawTime(logentry)}}</td>
-      <td>{{RenderLogEvent(logentry)}}</td>
+      <td>{{RenderLogItem(logentry)}}</td>
     </tr>
-
   </table>
-  <app-menu></app-menu>
 </div>
