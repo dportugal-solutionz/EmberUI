@@ -1,6 +1,6 @@
-.list {
+.menulist {
     display:flex;
-    flex-basis: content;
-    flex-flow: row;
-    direction: row;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
 }

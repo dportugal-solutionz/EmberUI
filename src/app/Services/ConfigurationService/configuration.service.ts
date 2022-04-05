@@ -5,6 +5,7 @@ import { ConfigJoin } from '../../Config/StaticJoinNumbers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import Config from 'src/app/Config/Config';
 import { HttpClient, HttpHeaders, HttpXhrBackend } from '@angular/common/http';
+import { LogAddContext } from 'src/app/Commons/LogAddContext';
 
 declare var CrComLib: typeof import('@crestron/ch5-crcomlib');
 
@@ -30,7 +31,8 @@ export class ConfigurationService {
 
     constructor(log: Logger, private systemOnline: ControlSystemOnlineService, private http : HttpClient)
     {
-        this.log = log.createChild({Context:'ConfigurationService'});
+        this.log = LogAddContext(log,"ConfigurationService");
+        //this.log = log.createChild({Context:'ConfigurationService'});
         this.systemOnline.IsOnline.subscribe({
             next: (state) => {
                 this.log.verbose("System Online State Received {state}",state);
@@ -94,7 +96,7 @@ export class ConfigurationService {
                         let pattern = /!!CONFIG-START!!([\s|\S]*)!!CONFIG-END!!/
                         this.log.verbose("data {data}",`${this.data.slice(0,10)}...${this.data.slice(this.data.length-10,this.data.length)}`);
                         let rx = pattern.exec(this.data);
-                        this.log.verbose("regex result {rx}",rx);
+                        //this.log.verbose("regex result {rx}",rx);
                         if (rx)
                         {
                             if (rx[1])

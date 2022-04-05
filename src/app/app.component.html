@@ -1,7 +1,38 @@
+<div class="app">
+  <!-- box-border  = lets include set the box sizing to border box to include borders and padding into the calculation
+                     https://tailwindcss.com/docs/box-sizing
+  -->
 
-<div>
-  <p>App Component</p>
-  <app-menulist *ngIf="ConfigParsingSuccessful" [Items]="MenuItems"></app-menulist>
+  <!-- HEADER -->
+  <div class="header">
+    <span></span>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+    <span></span>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <app-menulist *ngIf="ConfigParsingSuccessful" [Items]="MenuItems" class="footer"></app-menulist>
+    <!-- <div class="flex-1"> -->
+      <!-- <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button>
+      <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button>
+      <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button>
+      <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button> -->
+    <!-- </div> -->
+  </div>
+
+</div>
+
+
+
+
+
+
+<!-- below this is debugging stuff
+<div *ngIf="false">
   <table style="width:100%;">
     <colgroup>
       <col span="1" style="width:20%;">
@@ -43,9 +74,10 @@
       <td>Log Count</td>
       <td>{{LogEntries.length}}</td>
     </tr>
-    <tr *ngFor="let logentry of LogEntries; index as ndx" [ngClass]="GetLogEntryClass(logentry)">
-      <td>{{ndx}}</td>
-      <td>{{RenderLogItem(logentry)}}</td>
+    <tr *ngFor="let logentry of LogEntries; index as ndx">
+      <td [ngClass]="GetLogEntryClass(logentry)">{{ndx}}</td>
+      <td [ngClass]="GetLogEntryClass(logentry)">{{RenderLogItem(logentry)}}</td>
     </tr>
   </table>
 </div>
+-->

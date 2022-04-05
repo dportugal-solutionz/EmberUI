@@ -1,0 +1,27 @@
+<div class="btndiv">
+    <button class="button"
+        [ngClass]="CurrentProp.ButtonCS.Class"
+        [ngStyle]="CurrentProp.ButtonCS.Style" >
+        <ng-container *ngIf="HasIcon">
+            <img
+                [src]="CurrentProp.Icon"
+                [ngClass]="CurrentProp.IconCS.Class"
+                [ngStyle]="CurrentProp.IconCS.Style"
+                class="icon">
+            <div
+                [ngClass]="CurrentProp.LabelCS.Class"
+                [ngStyle]="CurrentProp.LabelCS.Style"
+                class="label">
+                    {{CurrentProp.Label}}
+            </div>
+        </ng-container>
+        <ng-container *ngIf="!HasIcon">
+            <div
+                [ngClass]="CurrentProp.LabelCS.Class"
+                [ngStyle]="CurrentProp.LabelCS.Style"
+                class="labelonly">
+                    <span>{{CurrentProp.Label}}</span>
+            </div>
+        </ng-container>
+    </button>
+</div>

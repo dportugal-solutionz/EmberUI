@@ -30,7 +30,7 @@ export class LogStorageSink implements Sink
     }
 
     emit(events: LogEvent[]) {
-        console.log("StorageSink adding {count} total {length}",events.length,this.totalEntries);
+        //console.log("StorageSink adding {count} total {length}",events.length,this.totalEntries);
         events.forEach(x => this.storage.Add(x));
     }
 

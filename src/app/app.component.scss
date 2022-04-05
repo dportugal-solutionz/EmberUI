@@ -1,3 +1,52 @@
+.app {
+    background-color: white;
+    color: black;
+    height:100%;
+    width:100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.header {
+    flex:2 1 0%;
+    // height:10%;
+    background-color: #00000022;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.body {
+    flex:15 1 0%;
+    // height:75%;
+    background-color: #00000011;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.footer {
+    flex:3 1 0%;
+    // height: 50%;
+    background-color: #00000033;
+    display:flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-evenly;
+}
+
+//button states
+.idle {
+    background-color: rgba(0, 119, 255, 0.6);
+}
+
+.pressed {
+    background-color: rgba(0, 119, 255, 0.2);
+}
+
+.selected {
+    background-color: rgb(53, 147, 255);
+}
+
+// these are for the debug stuff
 tr {
     overflow-x: clip;
 }

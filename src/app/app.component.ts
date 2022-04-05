@@ -15,6 +15,7 @@ import { ControlSystemOnlineService } from './Services/ControlSystemOnlineServic
 import { ConfigurationService } from './Services/ConfigurationService/configuration.service';
 import { LogStorageService } from './Services/LogStorageService/log-storage.service';
 import { RenderLogEvent } from './Commons/RenderLogEvent';
+import { LogAddContext } from './Commons/LogAddContext';
 declare var CrComLib: typeof import('@crestron/ch5-crcomlib');
 
 @Component({
@@ -29,7 +30,8 @@ export class AppComponent implements OnInit{
     MyMacAddress        : any;
     MyRoomName          : any;
     LogEntries          : any[] = [];
-    MenuItems           : Menu[] | null = null;
+    MenuItems           : Menu[] = [];
+
     NavigatorInformation : any = {
         userAgent:`${navigator.userAgent}`,
         maxTouchPoints:`${navigator.maxTouchPoints}`,
@@ -62,13 +64,43 @@ export class AppComponent implements OnInit{
         cso: ControlSystemOnlineService,
         configService: ConfigurationService)
     {
-        this.log = log.createChild({Context:'AppComponent'});
+        //this.log = log.createChild({Context:'AppComponent'});
+        this.log = LogAddContext(log,"AppComponent");
         this.log.info("Constructor");
 
         this.csoService = cso;
         this.csoService.IsOnline.subscribe({next: (state) => {
                 this.log.verbose("System Online State Received {state}",state);
                 this.SystemIsOnline = state;
+                // this.MenuItems = [
+                //     {
+                //         Id: 32,
+                //         Visible: true,
+                //         Label: "Item 32",
+                //         Icon: "https://i.ibb.co/0YjSpPy/Windows-Dark.png",
+                //         Description: '',
+                //         Source: -1,
+                //         Password: ''
+                //     },
+                //     {
+                //         Id: 33,
+                //         Visible: true,
+                //         Label: "Item 33",
+                //         Icon: "",
+                //         Description: '',
+                //         Source: -1,
+                //         Password: ''
+                //     },
+                //     {
+                //         Id: 34,
+                //         Visible: true,
+                //         Label: "Item 34 has a really long text label",
+                //         Icon: "https://i.ibb.co/grQ4vb1/Wireless-Device-Dark.png",
+                //         Description: '',
+                //         Source: -1,
+                //         Password: ''
+                //     }
+                // ];
         }});
         this.logList = logList;
         this.logList.Entries.subscribe({
@@ -95,6 +127,15 @@ export class AppComponent implements OnInit{
                 this.ConfigString = "Parsing Successful"; //JSON.stringify(this.configService.ConfigAsAnObject);
                 if (this.configService.ConfigAsAnObject)
                     this.MenuItems = this.configService.ConfigAsAnObject.Touchpanels[0].Menus;
+                this.MenuItems.push({
+                    Id: this.MenuItems.length+1,
+                    Visible: true,
+                    Label: "Shutdown",
+                    Icon: "https://i.ibb.co/xgc4vMJ/Power-Dark.png",
+                    Description: "shutdown",
+                    Source: -1,
+                    Password: ''
+                })
                 if (this.MenuItems)
                     this.log.verbose("Menus Count: {length}",this.MenuItems.length);
                 this.Rerender();
@@ -227,6 +268,11 @@ export class AppComponent implements OnInit{
         return RenderLogEvent(item);
     }
 
+    /**
+     * returns the class to be used by the log entry based on the LogEvent item
+     * @param item the log event being rendered
+     * @returns the class/style to be used
+     */
     GetLogEntryClass(item: LogEvent) : string[]
     {
         let ret : string[] = ['logtext'];

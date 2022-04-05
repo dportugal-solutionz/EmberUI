@@ -1,5 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule, Provider } from '@angular/core';
+import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, ErrorHandler, NgModule, Provider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { HttpClientModule} from '@angular/common/http';
@@ -13,8 +13,11 @@ import { LogStorageSink } from './Commons/LogStorageSink';
 import { LogStorageService } from './Services/LogStorageService/log-storage.service';
 import { SeriloggerConsoleSink } from './Commons/SeriloggerConsoleSink';
 
-import { MenulistComponent } from './Components/menulist/menulist.component';
-import { MenuitemComponent } from './Components/menuitem/menuitem.component';
+import { MenuListComponent } from './Components/menulist/menulist.component';
+import { MenuItemComponent } from './Components/menuitem/menuitem.component';
+import { ButtonComponent } from './Components/button/button.component';
+import { CustomErrorHandler } from './Commons/CustomErrorHandler';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 /*************************************************************************************************
 What is this code running on
@@ -26,13 +29,13 @@ let IamATouchPanel : boolean = navigator.userAgent.indexOf("Crestron Touchpanel"
 Logger
 **************************************************************************************************/
 //we temporarily create here since CSO needs one.
-let logger = new LoggerConfiguration()
+let csologger = new LoggerConfiguration()
   .writeTo(new ConsoleSink())
   .create();
-const CSO = new ControlSystemOnlineService(logger);
+const CSO = new ControlSystemOnlineService(csologger);
 const logStorage = new LogStorageService(CSO);
 //reconfigure the logger with additional sinks.
-logger = new LoggerConfiguration()
+let logger = new LoggerConfiguration()
       .writeTo(new SeriloggerConsoleSink())
       .writeTo(new SeriloggerCrestronSink())
       .writeTo(new LogStorageSink(logStorage))
@@ -67,12 +70,14 @@ ANGULAR
 @NgModule({
   declarations: [
     AppComponent,
-    MenulistComponent,
-    MenuitemComponent
+    MenuListComponent,
+    MenuItemComponent,
+    ButtonComponent
   ],
   imports: [
     BrowserModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule
   ],
   providers: [
     {provide: APP_BASE_HREF, useValue: './'},
@@ -84,7 +89,8 @@ ANGULAR
       provide: APP_INITIALIZER,
       useFactory: webXPanelFactory,
       multi: true
-    }
+    },
+    {provide: ErrorHandler, useClass: CustomErrorHandler}
   ],
   bootstrap: [AppComponent],
   schemas:[CUSTOM_ELEMENTS_SCHEMA]
@@ -93,7 +99,7 @@ export class AppModule {
 
   constructor(
     private log : Logger,
-    private cso: ControlSystemOnlineService,
+    private cso : ControlSystemOnlineService,
     private cfg : ConfigurationService,
   )
   {

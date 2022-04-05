@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { TpOfflineJoin, TpOnlineJoin } from '../../Config/StaticJoinNumbers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Logger } from 'serilogger';
+import { LogAddContext } from 'src/app/Commons/LogAddContext';
 declare var CrComLib: typeof import('@crestron/ch5-crcomlib');
 
 
@@ -28,7 +29,8 @@ export class ControlSystemOnlineService {
 	private log : Logger;
     constructor(log : Logger)
     {
-		this.log = log.createChild({Context:'ControlSystemOnlineService'});
+		//this.log = log.createChild({Context:'ControlSystemOnlineService'});
+		this.log = LogAddContext(log,"ControlSystemOnlineService");
 		//we cannot use ./classes/Logger/Logger.Serivce.ts here since it would create a circular dependency.
         this.log.verbose("Constructor");
 

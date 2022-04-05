@@ -1,4 +1,8 @@
-<div class="list">
-    <app-menuitem *ngFor="let item of Items" [Menu]="item">
+<ng-container *ngFor="let item of Items">
+    <app-menuitem  *ngIf="item.Visible"
+        [Menu]="item"
+        (OnPress)="ItemPressed(item)"
+        (OnRelease)="ItemReleased(item)">
     </app-menuitem>
-</div>
+</ng-container>
+

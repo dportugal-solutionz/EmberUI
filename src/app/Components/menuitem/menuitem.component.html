@@ -1,4 +1,6 @@
-<div class="outer" *ngIf="Menu.Visible">
-    <div class="icon">{{Menu.Icon}}</div>
-    <div class="label">{{Menu.Label}}</div>
-</div>
+<app-button
+    *ngIf="Menu.Visible"
+    [Label]="Menu.Label"
+    [Icon]="Menu.Icon"
+    (OnAction)="ButtonAction($event)">
+</app-button>

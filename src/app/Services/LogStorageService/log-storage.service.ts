@@ -35,12 +35,12 @@ export class LogStorageService {
   {
     if (this.storage.length > (this.maxEntries + 1))
     {
-      console.log("max reached");
+      //console.log("max reached");
       this.storage.pop();
     }
-    console.log("LogStorageService Adding an event");
+    //console.log("LogStorageService Adding an event");
     let len = this.storage.unshift(event);
-    console.log("total entries",len);
+    //console.log("total entries",len);
     this.entries.next(this.storage);
   }
   Clear() : void {

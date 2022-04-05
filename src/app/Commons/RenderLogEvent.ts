@@ -48,7 +48,7 @@ export function RenderLogEvent(event : any)
     level = level.padEnd('Information'.length,'.');
 
     let context = '';
-
+    //console.log('LogEvent Properties',event.properties);
     for (var key in event.properties)
     {
         if (event.properties.hasOwnProperty(key))
@@ -63,8 +63,7 @@ export function RenderLogEvent(event : any)
             }
         }
     }
-
-    let msg = event.messageTemplate.render(event.properties);
+   let msg = event.messageTemplate.render(event.properties);
 
     let out = `[${event.timestamp} ${level}]`;
     if (context.length > 0)
