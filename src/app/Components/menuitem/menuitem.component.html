@@ -2,5 +2,9 @@
     *ngIf="Menu.Visible"
     [Label]="Menu.Label"
     [Icon]="Menu.Icon"
-    (OnAction)="ButtonAction($event)">
+    [State]="SelectedState"
+    [Data]="Menu"
+    (OnAction)="ButtonAction($event)"
+    (OnStateChanged)="ButtonStateChanged($event)"
+    class="flex-1">
 </app-button>

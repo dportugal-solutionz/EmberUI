@@ -2,15 +2,23 @@ module.exports = {
   content: ['./src/**/*.{html,ts}'],
   theme: {
     extend: {
-      colors:{
-        idle:'#E1E1E1',
-        pressed:'#9DAECF',
-        selected:'#0055FF',
-        muted:'#D50000',
-        poweron:'#41D500',
-        poweroff:'#D50000'
+      flex: {
+        '75-75-0':'75 75 0%',
+        '25-25-0':'25 25 0%',
+        '75-1-0':'75 1 0%',
+        '25-1-0':'25 1 0%'
       },
-      height: theme=> ({
+      colors:{
+        'idle':'#A1C7E0',
+        'pressed':'#026E81',
+        'selected':'#FF9933',
+        'muted':'#D50000',
+        'poweron':'#41D500',
+        'poweroff':'#D50000',
+        'groupbox':'026E81',
+        'text':'',
+      },
+      height: {
         '10vh':'10vh',
         '20vh':'20vh',
         '30vh':'30vh',
@@ -22,7 +30,7 @@ module.exports = {
         '90vh':'90vh',
         '25vh':'25vh',
         '75vh':'75vh',
-      })
+      }
     },
   },
   plugins: []

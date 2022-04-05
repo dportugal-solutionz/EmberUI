@@ -1,8 +1,10 @@
-<ng-container *ngFor="let item of Items">
+<ng-container *ngFor="let item of Items;let ndx = index;">
     <app-menuitem  *ngIf="item.Visible"
         [Menu]="item"
         (OnPress)="ItemPressed(item)"
-        (OnRelease)="ItemReleased(item)">
+        (OnRelease)="ItemReleased(item)"
+        [Selected]="ItemSelected[ndx]"
+        class="w-full">
     </app-menuitem>
 </ng-container>
 

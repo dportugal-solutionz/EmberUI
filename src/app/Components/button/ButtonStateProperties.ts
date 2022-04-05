@@ -58,7 +58,7 @@ export class ButtonStateProperties {
                 Style: ''
             },
             ButtonCS:{
-                Class: 'idle',
+                Class: 'bg-idle',
                 Style: ''
             }
         }
@@ -86,7 +86,7 @@ export class ButtonStateProperties {
                 Style: ''
             },
             ButtonCS:{
-                Class: 'pressed',
+                Class: 'bg-pressed',
                 Style: ''
             }
         }
@@ -114,7 +114,7 @@ export class ButtonStateProperties {
                 Style: ''
             },
             ButtonCS:{
-                Class: 'selected',
+                Class: 'bg-selected',
                 Style: ''
             }
         }

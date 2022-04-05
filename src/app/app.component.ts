@@ -26,6 +26,8 @@ declare var CrComLib: typeof import('@crestron/ch5-crcomlib');
 export class AppComponent implements OnInit{
     title = 'EmberUI';
 
+    testing: boolean = true;
+
     MyIpAddress         : any;
     MyMacAddress        : any;
     MyRoomName          : any;
@@ -50,7 +52,7 @@ export class AppComponent implements OnInit{
     IpTableEntry        : any[] = [];
     ConfigString        : any;
     ConfigParsingSuccessful: boolean = false;
-
+    ConfigIsLoading : boolean = false;
     private changeDetectorRef : ChangeDetectorRef
 
     private log: Logger;
@@ -72,37 +74,47 @@ export class AppComponent implements OnInit{
         this.csoService.IsOnline.subscribe({next: (state) => {
                 this.log.verbose("System Online State Received {state}",state);
                 this.SystemIsOnline = state;
-                // this.MenuItems = [
-                //     {
-                //         Id: 32,
-                //         Visible: true,
-                //         Label: "Item 32",
-                //         Icon: "https://i.ibb.co/0YjSpPy/Windows-Dark.png",
-                //         Description: '',
-                //         Source: -1,
-                //         Password: ''
-                //     },
-                //     {
-                //         Id: 33,
-                //         Visible: true,
-                //         Label: "Item 33",
-                //         Icon: "",
-                //         Description: '',
-                //         Source: -1,
-                //         Password: ''
-                //     },
-                //     {
-                //         Id: 34,
-                //         Visible: true,
-                //         Label: "Item 34 has a really long text label",
-                //         Icon: "https://i.ibb.co/grQ4vb1/Wireless-Device-Dark.png",
-                //         Description: '',
-                //         Source: -1,
-                //         Password: ''
-                //     }
-                // ];
-        }});
-        this.logList = logList;
+                if (this.testing)
+                this.MenuItems = [
+                    {
+                        Id: 32,
+                        Visible: true,
+                        Label: "Item 32",
+                        Icon: "https://i.ibb.co/0YjSpPy/Windows-Dark.png",
+                        Description: '',
+                        Source: -1,
+                        Password: ''
+                    },
+                    {
+                        Id: 33,
+                        Visible: true,
+                        Label: "Item 33",
+                        Icon: "",
+                        Description: '',
+                        Source: -1,
+                        Password: ''
+                    },
+                    {
+                        Id: 34,
+                        Visible: true,
+                        Label: "Item 34 has a really long text label",
+                        Icon: "https://i.ibb.co/grQ4vb1/Wireless-Device-Dark.png",
+                        Description: '',
+                        Source: -1,
+                        Password: ''
+                    },
+                    {
+                        Id: 35,
+                        Visible: true,
+                        Label: "Shutdown",
+                        Icon: "https://i.ibb.co/xgc4vMJ/Power-Dark.png",
+                        Description: "shutdown",
+                        Source: -1,
+                        Password: ''
+                    }
+
+                ];
+        }});      this.logList = logList;
         this.logList.Entries.subscribe({
             next : (entries) => {
                 this.LogEntries = entries;
@@ -114,6 +126,7 @@ export class AppComponent implements OnInit{
 
         this.configService.Config.subscribe({
             next: (bytesreceived) => {
+                this.ConfigIsLoading = true;
                 //if (bytesreceived)
                 //    this.log.verbose("Config Received {bytesreceived}",bytesreceived);
             },
@@ -122,26 +135,27 @@ export class AppComponent implements OnInit{
                 this.ConfigString = `Error ${error}`;
             },
             complete: () => {
+                this.ConfigIsLoading = false;
                 this.ConfigParsingSuccessful = true;
                 this.log.verbose("Config Completed.");
                 this.ConfigString = "Parsing Successful"; //JSON.stringify(this.configService.ConfigAsAnObject);
-                if (this.configService.ConfigAsAnObject)
-                    this.MenuItems = this.configService.ConfigAsAnObject.Touchpanels[0].Menus;
-                this.MenuItems.push({
-                    Id: this.MenuItems.length+1,
-                    Visible: true,
-                    Label: "Shutdown",
-                    Icon: "https://i.ibb.co/xgc4vMJ/Power-Dark.png",
-                    Description: "shutdown",
-                    Source: -1,
-                    Password: ''
-                })
-                if (this.MenuItems)
-                    this.log.verbose("Menus Count: {length}",this.MenuItems.length);
+
+                if(!this.testing){
+                    if (this.configService.ConfigAsAnObject)
+                        this.MenuItems = this.configService.ConfigAsAnObject.Touchpanels[0].Menus;
+
+                    if (this.MenuItems)
+                        this.log.verbose("Menus Count: {length}",this.MenuItems.length);
+                }
                 this.Rerender();
             }
         })
 
+    }
+
+    AppClick(event: any) : void {
+        console.log("Click Test",event);
+        this.log.verbose("Click Test {event}",event)
     }
 
 

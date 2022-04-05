@@ -1,7 +1,8 @@
 .btndiv {
-    flex:1 1 0%;
+    flex: 1 1 0%;
     height: 100%;
     width: 100%;
+    display:flex;
     //border:5px solid rgba(0, 200, 200, 0.8);
 
     .button {
@@ -16,8 +17,8 @@
 
         .icon {
             flex:75 1 0%;
-            min-height: 0;
-            object-fit: scale-down;
+            //min-height: 0;
+            object-fit: contain;
             //border:5px solid rgba(200, 0, 200, 0.8);
         }
 
@@ -29,7 +30,7 @@
         }
 
         .labelonly{
-            flex:0 0 0%;
+            flex:1 1 0%;
             width: 100%;
             height: 100%;
             padding: 8px;

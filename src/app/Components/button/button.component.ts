@@ -1,3 +1,4 @@
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Component, EventEmitter, Input, OnInit, Output,ChangeDetectorRef } from '@angular/core';
 import { Logger } from 'serilogger';
 import { ButtonStates } from 'src/app/Commons/ButtonStates';
@@ -8,6 +9,7 @@ import { ButtonStateProperties } from './ButtonStateProperties';
  * A button with an Image and Label
  *  note no communication with the control system happens in this component.
  *  communication with the control system should be handled by the parent component of this button.
+ * State is changed before OnAction
  */
 @Component({
   selector: 'app-button',
@@ -21,10 +23,18 @@ export class ButtonComponent implements OnInit {
   private propSelected : ButtonStateProperties;
 
   /**
-   * Props of the button, index 0 is Idle, 1 is pressed, 2 is selected.
+   * Props of the button, index 0 is Idle, 1 is pressed, 2 is selected. Assigned at constructor
    */
-  Props = new Array<ButtonStateProperties>();
+  Props : ButtonStateProperties[];
 
+  private data : any;
+  /**
+   * any data to associate with this button. ButtonActionEventArgs will contain this data
+   */
+  @Input() set Data(value: any) {
+    this.log.verbose('assigning Data {value}',value);
+    this.data = value;
+  }
 
   /**
    * Sets Icon for all button states
@@ -34,7 +44,6 @@ export class ButtonComponent implements OnInit {
     this.Props.forEach( prop => prop.Icon = value );
   }
 
-
   /**
    * Sets the Label for all button states
    */
@@ -43,7 +52,6 @@ export class ButtonComponent implements OnInit {
     this.Props.forEach( prop => prop.Label = value);
   }
 
-
   /**
    * Sets the Background Image for all button states
    */
@@ -51,7 +59,6 @@ export class ButtonComponent implements OnInit {
     this.log.verbose("assigning BackgroundImage {value}",value);
     this.Props.forEach( prop => prop.BackgroundImage = value);
   }
-
 
   /**
    * Sets the Idle state properties
@@ -77,7 +84,7 @@ export class ButtonComponent implements OnInit {
   /**
    * OnAction is emitted when the button is pressed or released.
    */
-  @Output() OnAction : EventEmitter<ButtonStates> = new EventEmitter<ButtonStates>();
+  @Output() OnAction : EventEmitter<ButtonActionEventArgs> = new EventEmitter<ButtonActionEventArgs>();
 
   /**
    * OnStateChanged is emitted when the button's state changes (i.e. Idle, Pressed, Released, Selected)
@@ -105,51 +112,88 @@ export class ButtonComponent implements OnInit {
   MouseDown(event: any) : void {
     this.log.verbose("MouseDown {event}",event);
     this.isPressed = true;
-    this.OnAction.emit(ButtonStates.Pressed);
     this.CurrentProp = this.propPressed;
     this.State = ButtonStates.Pressed;
+    this.OnAction.emit(new ButtonActionEventArgs(this.Data, this.State));
   }
 
   MouseUp(event: any) : void {
     this.log.verbose("MouseUp {event}",event);
     this.isPressed = false;
-    this.State = this.nextState;
+
     if (this.State !== this.nextState)
     {
+      this.log.verbose("updating state to {nextState}",this.nextState);
       this.State = this.nextState;
-      this.OnStateChanged.emit(this.State)
     }
-    if (this.State == ButtonStates.Selected)
-      this.CurrentProp = this.propSelected;
-    else
-      this.CurrentProp = this.propIdle;
+
+    switch(this.State)
+    {
+      case ButtonStates.Selected:
+        this.log.verbose("setting current prop to selected");
+        this.CurrentProp = this.propSelected;
+        break;
+      case ButtonStates.Idle:
+        this.log.verbose("setting current prop to idle");
+        this.CurrentProp = this.propIdle;
+        break;
+    }
+
+    this.OnAction.emit(new ButtonActionEventArgs(this.Data,this.State));
   }
 
   //a holder for the next state in the event button is currently pressed,
   //when button releases this nextState will be set.
   private nextState : ButtonStates = ButtonStates.Idle;
+
   /**
-   * Current state of the button
+   * set accessor for State
    */
-  set State( newState : ButtonStates) {
-    if (this.State !== ButtonStates.Pressed)
+  @Input() set State( newState : ButtonStates) {
+
+    if (this.isPressed)
     {
+      this.log.verbose("currently Pressed. nextState set {value}",newState);
       this.nextState = newState;
       return;
     }
 
     if (newState !== this.state)
     {
+      this.log.verbose("State changed to {value}",newState);
       this.state = newState;
       this.nextState = newState;
       this.OnStateChanged.emit(this.state);
+      switch(this.state)
+      {
+        case ButtonStates.Idle:
+          this.CurrentProp = this.propIdle;
+          break;
+        case ButtonStates.Pressed:
+          this.CurrentProp = this.propPressed;
+          break;
+        case ButtonStates.Selected:
+          this.CurrentProp = this.propSelected;
+          break;
+      }
+      this.Rerender();
     }
   }
 
+  /**
+   * get accessor for State
+   */
   get State() : ButtonStates {
     return this.state;
   }
+
+  /**
+   * state variable holder for the the State member.
+   */
   private state : ButtonStates = ButtonStates.Idle;
+
+
+
 
   /**
    * retuns true if button is Idle
@@ -205,4 +249,14 @@ export class ButtonComponent implements OnInit {
       this.renderValue = 0;
   }
   private renderValue : number = 0;
+}
+
+export class ButtonActionEventArgs {
+  Data : any;
+  State : ButtonStates;
+  constructor(data : any, state : ButtonStates)
+  {
+    this.Data = data;
+    this.State = state;
+  }
 }

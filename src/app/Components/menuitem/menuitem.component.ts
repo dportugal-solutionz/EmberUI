@@ -3,6 +3,7 @@ import { Logger } from 'serilogger';
 import { Menu } from '../../Config/Config';
 import { ButtonStates } from 'src/app/Commons/ButtonStates';
 import { LogAddContext } from 'src/app/Commons/LogAddContext';
+import { ButtonActionEventArgs } from '../button/button.component';
 
 @Component({
   selector: 'app-menuitem',
@@ -26,32 +27,42 @@ export class MenuItemComponent implements OnInit {
   get Menu(): Menu {return this.menu}
 
 
-  @Input() set Selected (value : boolean) { }
+  @Input() set Selected (value : boolean) {
+    this.log.verbose("Selected set {value}",value);
+    if (value)
+      this.SelectedState = ButtonStates.Selected;
+    else
+      this.SelectedState = ButtonStates.Idle;
+  }
+  SelectedState : ButtonStates = ButtonStates.Idle;
+
   @Output() OnPress = new EventEmitter<Menu>();
   @Output() OnRelease = new EventEmitter<Menu>();
 
   private log : Logger;
   constructor(log : Logger) {
-    this.log = LogAddContext(log,"MenuItemComponent");
+    this.log = log;
+    //this.log = LogAddContext(log,`MenuItemComponent-${this.Menu.Id}-${this.Menu.Label}`);
     //this.log = log.createChild({Context:'MenuitemComponent'});
     this.log.verbose("Constructor");
   }
 
   ngOnInit(): void {
+    this.log = LogAddContext(this.log,`MenuItemComponent-${this.Menu.Id}`);
     this.log.verbose("ngOnInit {id} {label}",this.Menu.Id, this.Menu.Label);
   }
 
-  Pressed(event: any): void {
-    this.log.verbose("Pressed {event}",event);
-    this.OnPress.emit(this.Menu);
+  ButtonAction(event : ButtonActionEventArgs) : void {
+    this.log.verbose("ButtonAction {data} {state}",event.Data, event.State);
+    if (event.State == ButtonStates.Pressed){
+      this.OnPress.emit(this.Menu);
+    }
+    else if (event.State == ButtonStates.Idle){
+      this.OnRelease.emit(this.Menu);
+    }
   }
 
-  Released(event: any): void {
-    this.log.verbose("Released {event}",event);
-    this.OnPress.emit(this.Menu);
-  }
-
-  ButtonAction(event : any) : void {
-    this.log.verbose("ButtonAction {event}",event);
+  ButtonStateChanged(event : ButtonStates) : void {
+    this.log.verbose("ButtonStateChanged {event}",event);
   }
 }

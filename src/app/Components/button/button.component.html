@@ -1,26 +1,30 @@
-<div class="btndiv">
-    <button class="button"
+<div class="flex-none h-full w-full flex flex-row justify-center items-stretch">
+    <button class="flex-none h-full w-full flex flex-col justify-center items-stretch"
         [ngClass]="CurrentProp.ButtonCS.Class"
-        [ngStyle]="CurrentProp.ButtonCS.Style" >
+        [ngStyle]="CurrentProp.ButtonCS.Style"
+        (pointerdown)="MouseDown($event)"
+        (pointerup)="MouseUp($event)"
+        >
         <ng-container *ngIf="HasIcon">
             <img
                 [src]="CurrentProp.Icon"
                 [ngClass]="CurrentProp.IconCS.Class"
                 [ngStyle]="CurrentProp.IconCS.Style"
-                class="icon">
+                class="flex-75-75-0 object-contain w-full h-3/4">
+
             <div
                 [ngClass]="CurrentProp.LabelCS.Class"
                 [ngStyle]="CurrentProp.LabelCS.Style"
-                class="label">
-                    {{CurrentProp.Label}}
+                class="flex-25-25-0 flex items-center justify-center w-full h-1/4">
+                    <span class="text-center">{{CurrentProp.Label}}</span>
             </div>
         </ng-container>
         <ng-container *ngIf="!HasIcon">
             <div
                 [ngClass]="CurrentProp.LabelCS.Class"
                 [ngStyle]="CurrentProp.LabelCS.Style"
-                class="labelonly">
-                    <span>{{CurrentProp.Label}}</span>
+                class="flex-1 flex flex-col justify-center items-center w-full h-full overflow-hidden text-clip">
+                    <span class="text-center">{{CurrentProp.Label}}</span>
             </div>
         </ng-container>
     </button>

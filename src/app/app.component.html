@@ -5,25 +5,29 @@
 
   <!-- HEADER -->
   <div class="header">
-    <span></span>
   </div>
 
   <!-- BODY -->
   <div class="body">
-    <span></span>
   </div>
 
   <!-- FOOTER -->
   <div class="footer">
-    <app-menulist *ngIf="ConfigParsingSuccessful" [Items]="MenuItems" class="footer"></app-menulist>
-    <!-- <div class="flex-1"> -->
-      <!-- <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button>
-      <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button>
-      <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button>
-      <app-button Icon="https://i.ibb.co/p0hj3jd/Power-Light.png" Label="Shutdown" class="flex-none"></app-button> -->
-    <!-- </div> -->
+    <app-menulist *ngIf="testing" [Items]="MenuItems" class="w-full h-full flex flex-row justify-evenly items-stretch"></app-menulist>
   </div>
 
+  <!-- MODALS & TOASTS -->
+  <div
+    *ngIf="!testing && ConfigIsLoading"
+    class="absolute h-1/2 w-full top-0 left-0 bg-slate-900 text-orange-300 flex flex-row justify-center items-center">
+      <h1>Configuration is Loading;</h1>
+  </div>
+  <div
+    *ngIf="testing"
+    class="absolute h-10vh w-full top-0 left-0 bg-red-900 text-white flex flex-row justify-center items-center">
+      <h1>Testing Mode</h1>
+      <div *ngIf="ConfigIsLoading">. Config is Loading</div>
+  </div>
 </div>
 
 
@@ -31,8 +35,8 @@
 
 
 
-<!-- below this is debugging stuff
-<div *ngIf="false">
+<!-- below this is debugging stuff -->
+<div *ngIf="testing">
   <table style="width:100%;">
     <colgroup>
       <col span="1" style="width:20%;">
@@ -80,4 +84,3 @@
     </tr>
   </table>
 </div>
--->
